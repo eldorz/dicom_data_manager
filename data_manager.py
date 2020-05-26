@@ -19,7 +19,7 @@ class Series:
 
     def __init__(self, seriesdir, parent):
         self._seriesdir = seriesdir
-        self._dicomfiles = []
+        self._dicomfiles = None
         self._parent = parent
 
         if not os.path.isdir(self.getSeriesDir()):
@@ -29,9 +29,11 @@ class Series:
     def getDicomFiles(self):
         # populate dicomfiles
         if not self._dicomfiles:
+            dicomfiles = []
             for dcmf in os.listdir(self.getSeriesDir()):
-                self._dicomfiles.append(DicomFile(dcmf, self))
-        return self._dicomfiles.copy()
+                dicomfiles.append(DicomFile(dcmf, self))
+            self._dicomfiles = tuple(dicomfiles)
+        return self._dicomfiles
 
     def getSeriesDir(self):
         return os.path.join(self._parent.getStudyDir(), self._seriesdir)
@@ -46,7 +48,7 @@ class Study:
 
     def __init__(self, studydir, parent):
         self._studydir = studydir
-        self._series = []
+        self._series = None
         self._parent = parent
 
         if not self.getStudyDir():
@@ -56,9 +58,11 @@ class Study:
     def getSeries(self):
         if not self._series:
             # populate series
+            series = []
             for se in os.listdir(self.getStudyDir()):
-                self._series.append(Series(se, self))
-        return self._series.copy()
+                series.append(Series(se, self))
+            self._series = tuple(series)
+        return self._series
 
     def getStudyDir(self):
         return os.path.join(self._parent.getTopLevelDir(), self._studydir)
@@ -73,7 +77,7 @@ class DataManager:
 
     def __init__(self, topleveldir, options = {}):
         self._topleveldir = topleveldir
-        self._studies = []
+        self._studies = None
 
         # check topleveldir exists
         if not os.path.isdir(topleveldir):
@@ -83,9 +87,11 @@ class DataManager:
     def getStudies(self):
         if not self._studies:
             # populate studies
+            studies = []
             for st in os.listdir(self._topleveldir):
-                self._studies.append(Study(st, self))
-        return self._studies.copy()
+                studies.append(Study(st, self))
+            self._studies = tuple(studies)
+        return self._studies
 
     def getTopLevelDir(self):
         return self._topleveldir
@@ -100,9 +106,9 @@ class DataManager:
 def main():
     dm = DataManager("E:\\oto_test_2018_out")
     studies = dm.getStudies()
-    for st in studies:
+    for st in studies[0:5]:
         series = st.getSeries()
-        for se in series:
+        for se in series[0:5]:
             dicomfiles = se.getDicomFiles()
 
 if __name__ == '__main__':
